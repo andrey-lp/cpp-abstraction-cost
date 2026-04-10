@@ -90,6 +90,7 @@ int main() {
     cout << "Time taken (i-k-j): " << diff_ikj.count() << " seconds" << endl;
     
     cout << "\nSpeedup: " << diff_ijk.count() / diff_ikj.count() << "x faster!" << endl;
+    cout << "Checksum (to prevent optimizer from skipping loops): " << C1[n-1][n-1] + C2[n-1][n-1] << endl;
     
     return 0;
 }
