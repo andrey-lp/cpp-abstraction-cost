@@ -164,3 +164,51 @@ function runAnim2() {
 | **Очікувана швидкість C++** | Повільно | В ~3–5 разів швидше! 🚀 |
 
 Як бачимо, навіть не змінюючи загальної кількості математичних операцій, розуміння архітектури комп'ютера дозволяє нам писати оптимізований код, який повноцінно розкриває можливості "заліза".
+
+---
+
+## 5. C++ Code Snippets (Приклади реалізації)
+
+Ось процедурна реалізація на C++ для обох алгоритмів. Зверніть увагу, як змінюється лише порядок циклів `for`, але це критично впливає на швидкодію через роботу з кешем.
+
+### Класичний "Повільний" Алгоритм (i-j-k)
+```cpp
+void multiplyMatrixIJK(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& C) {
+    int n = A.size();
+    
+    // Loop through the rows of Matrix A
+    for (int i = 0; i < n; i++) {
+        // Loop through the columns of Matrix B
+        for (int j = 0; j < n; j++) {
+            // Loop through the elements to calculate the dot product
+            for (int k = 0; k < n; k++) {
+                // Here, B is accessed column by column: B[k][j]
+                // This causes "Cache Misses" because elements in a column are far apart in memory!
+                C[i][j] = C[i][j] + (A[i][k] * B[k][j]);
+            }
+        }
+    }
+}
+```
+
+### Оптимізований "Швидкий" Алгоритм (i-k-j)
+```cpp
+void multiplyMatrixIKJ(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& C) {
+    int n = A.size();
+    
+    // Loop through the rows of Matrix A
+    for (int i = 0; i < n; i++) {
+        // Loop through the columns of Matrix A / rows of Matrix B
+        for (int k = 0; k < n; k++) {
+            // Here, A[i][k] is a constant for the innermost loop.
+            // Loop through the columns of Matrix B
+            for (int j = 0; j < n; j++) {
+                // Here, B and C are accessed row by row: B[k][j]
+                // Elements in a row are next to each other in memory.
+                // This causes "Cache Hits", making the CPU read memory extremely fast!
+                C[i][j] = C[i][j] + (A[i][k] * B[k][j]);
+            }
+        }
+    }
+}
+```
