@@ -241,3 +241,86 @@ C[i][j] = C[i][j] + (A[i][k] * B[k][j]);
 У "повільному" циклі `i-j-k` ми постійно стрибали по вертикалі. Дані не лежали підряд. Студенту з "широким маркером" там просто нічого робити, тому процесор відмовляється від такої оптимізації і робить все по одному числу, що дуже довго.
 
 Як бачите, розуміння того, як дані лежать у пам'яті комп'ютера, дозволяє не лише швидше їх завантажувати, а й застосовувати "суперздібності" процесора!
+
+<style>
+.simd-wrap { display: flex; flex-direction: column; align-items: center; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-bottom: 20px; background: #fdfdfd;}
+.simd-box { display: flex; gap: 4px; padding: 6px; border: 2px solid #ccc; border-radius: 5px; background: #fff;}
+.simd-cell { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #eee; font-family: monospace; font-size: 14px; transition: all 0.2s;}
+.simd-avx { background-color: #ffe6e6; border-color: #c00; font-weight: bold; transform: scale(1.1); box-shadow: 0 0 10px rgba(200,0,0,0.3);}
+.simd-scalar { background-color: #e6e6ff; border-color: #00c; font-weight: bold; transform: scale(1.1);}
+</style>
+
+<div class="simd-wrap">
+  <h3>Візуалізація: Звичайний цикл проти SIMD</h3>
+  <div style="display: flex; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;">
+    
+    <div style="text-align: center;">
+      <b>Скалярний режим (по одному)</b><br><br>
+      <div class="simd-box" id="scalar-box">
+      </div>
+      <div id="scalar-info" style="margin-top: 10px; font-weight: bold; color: #00c; height: 30px;"></div>
+    </div>
+    
+    <div style="text-align: center;">
+      <b>SIMD векторний режим (по 4 одразу)</b><br><br>
+      <div class="simd-box" id="vector-box">
+      </div>
+      <div id="vector-info" style="margin-top: 10px; font-weight: bold; color: #c00; height: 30px;"></div>
+    </div>
+    
+  </div>
+  <div class="controls">
+    <button onclick="runSimdAnim()" style="background: #e67e22;">▶ Запустити порівняння</button>
+  </div>
+</div>
+
+<script>
+function buildSimdBox(id) {
+  const c = document.getElementById(id);
+  c.innerHTML = '';
+  for(let i=0; i<8; i++) {
+    let el = document.createElement('div'); el.className = 'simd-cell'; el.id = `${id}-${i}`; el.innerText = i; c.appendChild(el);
+  }
+}
+buildSimdBox('scalar-box'); buildSimdBox('vector-box');
+
+let simdTimer1 = null;
+let simdTimer2 = null;
+
+function runSimdAnim() {
+  clearInterval(simdTimer1); clearInterval(simdTimer2);
+  document.querySelectorAll('#scalar-box .simd-cell, #vector-box .simd-cell').forEach(e => e.className = 'simd-cell');
+  
+  let s_idx = 0;
+  let v_idx = 0;
+  
+  // Скалярний - 1 елемент за один крок (повільніше)
+  simdTimer1 = setInterval(() => {
+    document.querySelectorAll('#scalar-box .simd-cell').forEach(e => e.className = 'simd-cell');
+    if (s_idx < 8) {
+      document.getElementById(`scalar-box-${s_idx}`).classList.add('simd-scalar');
+      document.getElementById('scalar-info').innerText = `Такт ${s_idx+1}: обробка [${s_idx}]`;
+      s_idx++;
+    } else {
+      document.getElementById('scalar-info').innerText = `Готово за 8 тактів!`;
+      clearInterval(simdTimer1);
+    }
+  }, 500);
+  
+  // Векторний (SIMD) - 4 елементи за один крок (швидше)
+  simdTimer2 = setInterval(() => {
+    document.querySelectorAll('#vector-box .simd-cell').forEach(e => e.className = 'simd-cell');
+    if (v_idx < 8) {
+      for(let i=0; i<4; i++) {
+        if(v_idx+i < 8) document.getElementById(`vector-box-${v_idx+i}`).classList.add('simd-avx');
+      }
+      document.getElementById('vector-info').innerText = `Такт ${(v_idx/4)+1}: обробка [${v_idx}...${v_idx+3}]`;
+      v_idx += 4;
+    } else {
+      document.getElementById('vector-info').innerText = `Готово за 2 такти! (Швидше!)`;
+      clearInterval(simdTimer2);
+    }
+  }, 500);
+}
+</script>
+
