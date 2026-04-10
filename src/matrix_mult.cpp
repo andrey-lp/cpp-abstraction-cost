@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -60,27 +61,35 @@ void multiplyMatrixIKJ(const vector<vector<int>>& A, const vector<vector<int>>& 
 }
 
 int main() {
-    // Demonstration on a small 3x3 matrix for 1st-year students
-    int n = 3;
+    // Demonstration on a large 1000x1000 matrix to see the real speed difference
+    int n = 1000;
     
     // Initialize matrices A and B with 1s, and C with 0s
     // A vector of vectors is used to represent a 2D matrix
+    // Note: Creating large matrices takes a moment
+    cout << "Initializing matrices of size " << n << "x" << n << "..." << endl;
     vector<vector<int>> A(n, vector<int>(n, 1));
     vector<vector<int>> B(n, vector<int>(n, 1));
     vector<vector<int>> C1(n, vector<int>(n, 0));
     vector<vector<int>> C2(n, vector<int>(n, 0));
     
     // Run the classic unoptimized method
-    cout << "Running Classic i-j-k Method..." << endl;
+    cout << "\nRunning Classic i-j-k Method..." << endl;
+    auto start_ijk = chrono::high_resolution_clock::now();
     multiplyMatrixIJK(A, B, C1);
-    cout << "Result C1:" << endl;
-    printMatrix(C1);
+    auto end_ijk = chrono::high_resolution_clock::now();
+    chrono::duration<double> diff_ijk = end_ijk - start_ijk;
+    cout << "Time taken (i-j-k): " << diff_ijk.count() << " seconds" << endl;
     
     // Run the optimized method
     cout << "\nRunning Optimized i-k-j Method..." << endl;
+    auto start_ikj = chrono::high_resolution_clock::now();
     multiplyMatrixIKJ(A, B, C2);
-    cout << "Result C2:" << endl;
-    printMatrix(C2);
+    auto end_ikj = chrono::high_resolution_clock::now();
+    chrono::duration<double> diff_ikj = end_ikj - start_ikj;
+    cout << "Time taken (i-k-j): " << diff_ikj.count() << " seconds" << endl;
+    
+    cout << "\nSpeedup: " << diff_ijk.count() / diff_ikj.count() << "x faster!" << endl;
     
     return 0;
 }
