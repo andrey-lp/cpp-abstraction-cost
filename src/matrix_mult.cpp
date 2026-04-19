@@ -62,6 +62,20 @@ void multiplyMatrixIKJ(const vector<vector<int>>& A, const vector<vector<int>>& 
     }
 }
 
+// Procedural implementation of the optimized i-k-j matrix multiplication on a 1D Flat Array
+// Focus for students: Notice the difference between vector<vector<int>> (array of pointers) and vector<int> (contiguous memory)
+[[gnu::noinline]]
+void multiplyMatrixFlat(const vector<int>& A, const vector<int>& B, vector<int>& C, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int k = 0; k < n; k++) {
+            int a_ik = A[i * n + k];
+            for (int j = 0; j < n; j++) {
+                C[i * n + j] += a_ik * B[k * n + j];
+            }
+        }
+    }
+}
+
 int main() {
     // Demonstration on a large 2048x2048 matrix to see the real speed difference
     // Size is chosen to exceed typical LLC (Last Level Cache) to demonstrate RAM fetch performance.
@@ -75,6 +89,11 @@ int main() {
     vector<vector<int>> B(n, vector<int>(n, 1));
     vector<vector<int>> C1(n, vector<int>(n, 0));
     vector<vector<int>> C2(n, vector<int>(n, 0));
+
+    // Allocate 1D arrays
+    vector<int> flatA(n * n, 1);
+    vector<int> flatB(n * n, 1);
+    vector<int> flatC(n * n, 0);
     
     // Run the classic unoptimized method
     cout << "\nRunning Classic i-j-k Method..." << endl;
@@ -92,8 +111,17 @@ int main() {
     chrono::duration<double> diff_ikj = end_ikj - start_ikj;
     cout << "Time taken (i-k-j): " << diff_ikj.count() << " seconds" << endl;
     
-    cout << "\nSpeedup: " << diff_ijk.count() / diff_ikj.count() << "x faster!" << endl;
-    cout << "Checksum (to prevent optimizer from skipping loops): " << C1[n-1][n-1] + C2[n-1][n-1] << endl;
+    // Run the 1D Flat Array method
+    cout << "\nRunning Optimized i-k-j on Flat 1D Array..." << endl;
+    auto start_flat = chrono::high_resolution_clock::now();
+    multiplyMatrixFlat(flatA, flatB, flatC, n);
+    auto end_flat = chrono::high_resolution_clock::now();
+    chrono::duration<double> diff_flat = end_flat - start_flat;
+    cout << "Time taken (Flat 1D): " << diff_flat.count() << " seconds" << endl;
+    
+    cout << "\nSpeedup (IJK vs IKJ 2D): " << diff_ijk.count() / diff_ikj.count() << "x faster!" << endl;
+    cout << "Speedup (IJK vs Flat 1D): " << diff_ijk.count() / diff_flat.count() << "x faster!" << endl;
+    cout << "Checksum (to prevent optimizer from skipping loops): " << C1[n-1][n-1] + C2[n-1][n-1] + flatC[n * n - 1] << endl;
     
     return 0;
 }
