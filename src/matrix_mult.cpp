@@ -21,6 +21,7 @@ void printMatrix(const vector<vector<int>>& mat) {
 // Procedural implementation of the classic i-j-k matrix multiplication
 // This algorithm multiplies Matrix A and Matrix B, saving the result in Matrix C.
 // Focus for students: Notice the order of the loops: i, then j, then k.
+[[gnu::noinline]]
 void multiplyMatrixIJK(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& C) {
     int n = A.size();
     
@@ -41,6 +42,7 @@ void multiplyMatrixIJK(const vector<vector<int>>& A, const vector<vector<int>>& 
 // Procedural implementation of the optimized i-k-j matrix multiplication
 // This algorithm does exactly the same math, but changes the order of the loops.
 // Focus for students: Notice the order of the loops: i, then k, then j.
+[[gnu::noinline]]
 void multiplyMatrixIKJ(const vector<vector<int>>& A, const vector<vector<int>>& B, vector<vector<int>>& C) {
     int n = A.size();
     
@@ -61,8 +63,9 @@ void multiplyMatrixIKJ(const vector<vector<int>>& A, const vector<vector<int>>& 
 }
 
 int main() {
-    // Demonstration on a large 1000x1000 matrix to see the real speed difference
-    int n = 1000;
+    // Demonstration on a large 2048x2048 matrix to see the real speed difference
+    // Size is chosen to exceed typical LLC (Last Level Cache) to demonstrate RAM fetch performance.
+    int n = 2048;
     
     // Initialize matrices A and B with 1s, and C with 0s
     // A vector of vectors is used to represent a 2D matrix

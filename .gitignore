@@ -43,3 +43,10 @@
 # AI Assistant folders
 .antigravity/
 .gemini/
+
+# Profiling and binaries
+matrix
+matrix_mult
+perf.data*
+release.json
+task.md
