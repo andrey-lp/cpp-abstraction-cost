@@ -76,7 +76,9 @@ void multiplyMatrixFlat(const vector<int>& A, const vector<int>& B, vector<int>&
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    string mode = "all";
+    if (argc > 1) mode = argv[1];
     // Demonstration on a large 2048x2048 matrix to see the real speed difference
     // Size is chosen to exceed typical LLC (Last Level Cache) to demonstrate RAM fetch performance.
     int n = 2048;
@@ -95,32 +97,42 @@ int main() {
     vector<int> flatB(n * n, 1);
     vector<int> flatC(n * n, 0);
     
+    chrono::duration<double> diff_ijk, diff_ikj, diff_flat;
+
     // Run the classic unoptimized method
-    cout << "\nRunning Classic i-j-k Method..." << endl;
-    auto start_ijk = chrono::high_resolution_clock::now();
-    multiplyMatrixIJK(A, B, C1);
-    auto end_ijk = chrono::high_resolution_clock::now();
-    chrono::duration<double> diff_ijk = end_ijk - start_ijk;
-    cout << "Time taken (i-j-k): " << diff_ijk.count() << " seconds" << endl;
+    if (mode == "all" || mode == "ijk") {
+        cout << "\nRunning Classic i-j-k Method..." << endl;
+        auto start_ijk = chrono::high_resolution_clock::now();
+        multiplyMatrixIJK(A, B, C1);
+        auto end_ijk = chrono::high_resolution_clock::now();
+        diff_ijk = end_ijk - start_ijk;
+        cout << "Time taken (i-j-k): " << diff_ijk.count() << " seconds" << endl;
+    }
     
     // Run the optimized method
-    cout << "\nRunning Optimized i-k-j Method..." << endl;
-    auto start_ikj = chrono::high_resolution_clock::now();
-    multiplyMatrixIKJ(A, B, C2);
-    auto end_ikj = chrono::high_resolution_clock::now();
-    chrono::duration<double> diff_ikj = end_ikj - start_ikj;
-    cout << "Time taken (i-k-j): " << diff_ikj.count() << " seconds" << endl;
+    if (mode == "all" || mode == "ikj") {
+        cout << "\nRunning Optimized i-k-j Method..." << endl;
+        auto start_ikj = chrono::high_resolution_clock::now();
+        multiplyMatrixIKJ(A, B, C2);
+        auto end_ikj = chrono::high_resolution_clock::now();
+        diff_ikj = end_ikj - start_ikj;
+        cout << "Time taken (i-k-j): " << diff_ikj.count() << " seconds" << endl;
+    }
     
     // Run the 1D Flat Array method
-    cout << "\nRunning Optimized i-k-j on Flat 1D Array..." << endl;
-    auto start_flat = chrono::high_resolution_clock::now();
-    multiplyMatrixFlat(flatA, flatB, flatC, n);
-    auto end_flat = chrono::high_resolution_clock::now();
-    chrono::duration<double> diff_flat = end_flat - start_flat;
-    cout << "Time taken (Flat 1D): " << diff_flat.count() << " seconds" << endl;
+    if (mode == "all" || mode == "flat") {
+        cout << "\nRunning Optimized i-k-j on Flat 1D Array..." << endl;
+        auto start_flat = chrono::high_resolution_clock::now();
+        multiplyMatrixFlat(flatA, flatB, flatC, n);
+        auto end_flat = chrono::high_resolution_clock::now();
+        diff_flat = end_flat - start_flat;
+        cout << "Time taken (Flat 1D): " << diff_flat.count() << " seconds" << endl;
+    }
     
-    cout << "\nSpeedup (IJK vs IKJ 2D): " << diff_ijk.count() / diff_ikj.count() << "x faster!" << endl;
-    cout << "Speedup (IJK vs Flat 1D): " << diff_ijk.count() / diff_flat.count() << "x faster!" << endl;
+    if (mode == "all") {
+        cout << "\nSpeedup (IJK vs IKJ 2D): " << diff_ijk.count() / diff_ikj.count() << "x faster!" << endl;
+        cout << "Speedup (IJK vs Flat 1D): " << diff_ijk.count() / diff_flat.count() << "x faster!" << endl;
+    }
     cout << "Checksum (to prevent optimizer from skipping loops): " << C1[n-1][n-1] + C2[n-1][n-1] + flatC[n * n - 1] << endl;
     
     return 0;
